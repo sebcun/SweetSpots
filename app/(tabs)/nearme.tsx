@@ -309,7 +309,7 @@ export default function NearMeScreen() {
   const filteredSpots = useMemo(() => {
     if (selectedCandies.length === 0) return sortedSpots;
     return sortedSpots.filter((spot) =>
-      selectedCandies.some((candy) => spot.candies.includes(candy))
+      selectedCandies.every((candy) => spot.candies.includes(candy))
     );
   }, [sortedSpots, selectedCandies]);
 
@@ -342,22 +342,26 @@ export default function NearMeScreen() {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       >
-        {filteredSpots.map((s) => (
-          <CandyCard
-            key={s.id}
-            address={s.address}
-            candies={s.candies}
-            lat={s.lat}
-            lon={s.lon}
-            userLat={userLocation?.lat}
-            userLon={userLocation?.lon}
-            onPress={() => {
-              router.push(
-                `/?lat=${s.lat}&lon=${s.lon}&address=${s.address}&candies=${s.candies}`
-              );
-            }}
-          />
-        ))}
+        {filteredSpots.length === 0 ? (
+          <Text style={styles.noHousesText}>No houses found near you</Text>
+        ) : (
+          filteredSpots.map((s) => (
+            <CandyCard
+              key={s.id}
+              address={s.address}
+              candies={s.candies}
+              lat={s.lat}
+              lon={s.lon}
+              userLat={userLocation?.lat}
+              userLon={userLocation?.lon}
+              onPress={() => {
+                router.push(
+                  `/?lat=${s.lat}&lon=${s.lon}&address=${s.address}&candies=${s.candies}`
+                );
+              }}
+            />
+          ))
+        )}
       </ScrollView>
 
       <Modal
@@ -445,7 +449,7 @@ const styles = StyleSheet.create({
     left: 20,
     right: 20,
     paddingVertical: 12,
-    backgroundColor: "#007AFF",
+    backgroundColor: "#eb6123",
     borderRadius: 8,
     alignItems: "center",
   },
@@ -453,5 +457,10 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "600",
+  },
+  noHousesText: {
+    textAlign: "center",
+    fontSize: 18,
+    marginTop: 50,
   },
 });
