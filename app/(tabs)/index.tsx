@@ -1,4 +1,5 @@
 import { View } from "@/components/Themed";
+import { MOCK_SPOTS } from "@/constants/MockSpots";
 import * as Location from "expo-location";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -64,14 +65,17 @@ export default function MapScreen() {
   return (
     <View style={styles.container}>
       <MapView style={styles.map} region={region}>
-        <Marker
-          coordinate={{
-            latitude: region.latitude,
-            longitude: region.longitude,
-          }}
-          title={addressT}
-          description={candiesT}
-        />
+        {MOCK_SPOTS.map((spot) => (
+          <Marker
+            key={spot.id}
+            coordinate={{
+              latitude: spot.lat,
+              longitude: spot.lon,
+            }}
+            title={spot.address}
+            description={spot.candies}
+          />
+        ))}
       </MapView>
     </View>
   );
