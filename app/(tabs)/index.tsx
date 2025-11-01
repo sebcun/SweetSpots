@@ -1,4 +1,5 @@
 import { View } from "@/components/Themed";
+import * as Location from "expo-location";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
@@ -22,14 +23,29 @@ export default function MapScreen() {
   });
 
   useEffect(() => {
-    if (lat && lon) {
-      setRegion({
-        latitude: parseFloat(lat),
-        longitude: parseFloat(lon),
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
-    }
+    const getLocation = async () => {
+      if (lat && lon) {
+        setRegion({
+          latitude: parseFloat(lat),
+          longitude: parseFloat(lon),
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        });
+      } else {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+
+        if (status === "granted") {
+          let location = await Location.getCurrentPositionAsync();
+          setRegion({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+          });
+        }
+      }
+    };
+    getLocation();
   }, [lat, lon]);
 
   return (
