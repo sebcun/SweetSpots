@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
   Modal,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -45,6 +46,7 @@ export default function NearMeScreen() {
     lat: number;
     lon: number;
   } | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [sortOrder, setSortOrder] = useState<"closest" | "farthest">("closest");
   const [selectedCandies, setSelectedCandies] = useState<string[]>([]);
@@ -60,11 +62,17 @@ export default function NearMeScreen() {
     return Array.from(candySet).sort();
   }, []);
 
+  const loadData = async () => {
+    const data = await loadSpots();
+    setSpots(data);
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
   useEffect(() => {
-    const loadData = async () => {
-      const data = await loadSpots();
-      setSpots(data);
-    };
     loadData();
   }, []);
 
@@ -141,6 +149,9 @@ export default function NearMeScreen() {
       <ScrollView
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {filteredSpots.length === 0 ? (
           <Text style={styles.noHousesText}>No houses found near you</Text>
