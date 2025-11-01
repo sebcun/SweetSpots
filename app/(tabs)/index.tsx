@@ -1,16 +1,20 @@
+import RatingModal from "@/components/RatingModal";
 import { View } from "@/components/Themed";
+import { useColorScheme } from "@/components/useColorScheme";
+import Colors from "@/constants/Colors";
 import { Spot } from "@/constants/types";
 import { loadSpots } from "@/utils/spots";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 
 export default function MapScreen() {
   const { lat, lon } = useLocalSearchParams<{ lat?: string; lon?: string }>();
   const router = useRouter();
+  const colorScheme = useColorScheme();
 
   const { address, candies } = useLocalSearchParams<{
     address?: string;
@@ -76,6 +80,58 @@ export default function MapScreen() {
     getLocation();
   }, [lat, lon]);
 
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
+  const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
+
+  const themedStyles = useMemo(() => {
+    const colors = Colors[colorScheme ?? "light"];
+    return StyleSheet.create({
+      calloutContainer: {
+        width: 250,
+        padding: 10,
+        backgroundColor: colors.background,
+        borderRadius: 8,
+      },
+      calloutTitle: {
+        fontSize: 16,
+        fontWeight: "bold",
+        marginBottom: 5,
+        color: colors.text,
+      },
+      calloutDescription: {
+        fontSize: 14,
+        marginBottom: 5,
+        color: colors.text,
+      },
+      ratingContainer: {
+        marginTop: 5,
+      },
+      ratingText: {
+        fontSize: 14,
+        marginBottom: 5,
+        color: colors.text,
+      },
+      starsContainer: {
+        flexDirection: "row",
+      },
+      noRatingText: {
+        fontSize: 14,
+        color: "#888",
+      },
+      rateButton: {
+        marginTop: 10,
+        padding: 8,
+        backgroundColor: "#eb6223",
+        borderRadius: 5,
+        alignItems: "center",
+      },
+      rateButtonText: {
+        color: "white",
+        fontSize: 14,
+      },
+    });
+  }, [colorScheme]);
+
   return (
     <View style={styles.container}>
       <MapView style={styles.map} region={region}>
@@ -86,9 +142,11 @@ export default function MapScreen() {
               latitude: spot.lat,
               longitude: spot.lon,
             }}
-            title={spot.address}
-            description={spot.candies}
             image={require("../../assets/images/pumpkin.png")}
+            onPress={() => {
+              setSelectedSpot(spot);
+              setRatingModalVisible(true);
+            }}
           />
         ))}
       </MapView>
@@ -98,6 +156,12 @@ export default function MapScreen() {
       >
         <Ionicons name="add" size={24} color="white" />
       </TouchableOpacity>
+      <RatingModal
+        visible={ratingModalVisible}
+        onClose={() => setRatingModalVisible(false)}
+        spot={selectedSpot}
+        onRatingSubmitted={loadSpotsData}
+      />
     </View>
   );
 }

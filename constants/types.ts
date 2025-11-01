@@ -6,6 +6,8 @@ export type Spot = {
   lon: number;
   ip: string;
   created_at: string;
+  average_ratings?: number;
+  num_ratings?: number;
 };
 
 export const COMMON_CANDIES = [

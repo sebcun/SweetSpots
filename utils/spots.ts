@@ -38,3 +38,24 @@ export const getUserIP = async (): Promise<string> => {
     return "unknown";
   }
 };
+
+export const addRating = async (
+  spotId: number,
+  rating: number,
+  ip: string,
+  comment?: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("ratings")
+      .insert([{ spot_id: spotId, rating, ip, comment }]);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error adding rating:", error);
+    if (error.message.includes("duplicate key")) {
+      console.log("Rating already exists for this IP and spot.");
+    }
+    return false;
+  }
+};
