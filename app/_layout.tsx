@@ -54,6 +54,10 @@ function RootLayoutNav() {
           name="modal"
           options={{ presentation: "modal", headerShown: false }}
         />
+        <Stack.Screen
+          name="privacy"
+          options={{ presentation: "modal", headerShown: false }}
+        />
       </Stack>
     </ThemeProvider>
   );
