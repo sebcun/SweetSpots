@@ -74,6 +74,7 @@ export default function MapScreen() {
             }}
             title={spot.address}
             description={spot.candies}
+            image={require("../../assets/images/pumpkin.png")}
           />
         ))}
       </MapView>
