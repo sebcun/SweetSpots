@@ -15,7 +15,9 @@ import { Text, View } from "@/components/Themed";
 
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { MOCK_SPOTS } from "@/constants/MockSpots";
+
+import { Spot } from "@/constants/types";
+import { loadSpots } from "@/utils/spots";
 
 function getDistance(
   lat1: number,
@@ -48,12 +50,22 @@ export default function NearMeScreen() {
   const [selectedCandies, setSelectedCandies] = useState<string[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const [spots, setSpots] = useState<Spot[]>([]);
+
   const allCandies = useMemo(() => {
     const candySet = new Set<string>();
-    MOCK_SPOTS.forEach((spot) =>
+    spots.forEach((spot) =>
       spot.candies.split(", ").forEach((candy) => candySet.add(candy.trim()))
     );
     return Array.from(candySet).sort();
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await loadSpots();
+      setSpots(data);
+    };
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -72,8 +84,8 @@ export default function NearMeScreen() {
   }, []);
 
   const sortedSpots = useMemo(() => {
-    if (!userLocation) return MOCK_SPOTS;
-    return [...MOCK_SPOTS].sort((a, b) => {
+    if (!userLocation) return spots;
+    return [...spots].sort((a, b) => {
       const distA = getDistance(
         userLocation.lat,
         userLocation.lon,
@@ -92,7 +104,7 @@ export default function NearMeScreen() {
         return distB - distA;
       }
     });
-  }, [userLocation, sortOrder]);
+  }, [userLocation, sortOrder, spots]);
 
   const filteredSpots = useMemo(() => {
     if (selectedCandies.length === 0) return sortedSpots;
