@@ -42,6 +42,19 @@ export default function MapScreen() {
             latitudeDelta: 0.01,
             longitudeDelta: 0.01,
           });
+        } else {
+          try {
+            const response = await fetch("https://ipapi.co/json/");
+            const data = await response.json();
+            setRegion({
+              latitude: data.latitude,
+              longitude: data.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
+            });
+          } catch (error) {
+            console.log("error fetching rough location");
+          }
         }
       }
     };
