@@ -1,3 +1,4 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import { useEffect, useState } from "react";
 import {
@@ -21,11 +22,27 @@ export default function SettingsScreen() {
   const router = useRouter();
   const [adminModalVisible, setAdminModalVisible] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
+  const [candyCount, setCandyCount] = useState(0);
 
   const loadReportsData = async () => {
     const data = await loadReports();
     setReports(data);
   };
+
+  const loadCandyCount = async () => {
+    const stored = await AsyncStorage.getItem("candyCount");
+    if (stored) {
+      setCandyCount(parseInt(stored, 10));
+    }
+  };
+
+  const saveCandyCount = async (count: number) => {
+    await AsyncStorage.setItem("candyCount", count.toString());
+  };
+
+  useEffect(() => {
+    loadCandyCount();
+  }, []);
 
   useEffect(() => {
     if (adminModalVisible) {
@@ -69,6 +86,20 @@ export default function SettingsScreen() {
     }
   };
 
+  const addCandy = () => {
+    const newCount = candyCount + 1;
+    setCandyCount(newCount);
+    saveCandyCount(newCount);
+  };
+
+  const removeCandy = () => {
+    if (candyCount > 0) {
+      const newCount = candyCount - 1;
+      setCandyCount(newCount);
+      saveCandyCount(newCount);
+    }
+  };
+
   const renderReport = ({ item }: { item: Report }) => (
     <View style={styles.reportItem}>
       <Text style={[styles.reportText, { color: colors.text }]}>
@@ -100,6 +131,22 @@ export default function SettingsScreen() {
       <Text style={styles.description}>
         SweetSpots helps you find houses with the candy you want nearby!
       </Text>
+      <View style={styles.candySection}>
+        <Text style={[styles.candyTitle, { color: colors.text }]}>
+          Candy Collection
+        </Text>
+        <Text style={[styles.candyCount, { color: colors.text }]}>
+          {candyCount} candies collected
+        </Text>
+        <View style={styles.candyButtons}>
+          <TouchableOpacity style={styles.addButton} onPress={addCandy}>
+            <Text style={styles.buttonText}>+</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.removeButton} onPress={removeCandy}>
+            <Text style={styles.buttonText}>-</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       <View>
         <Text style={styles.version}>
           Version {Constants.expoConfig?.version || "1.0.0"}
@@ -155,6 +202,32 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
     marginHorizontal: 30,
+  },
+  candySection: {
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  candyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  candyCount: {
+    fontSize: 16,
+    marginVertical: 10,
+  },
+  candyButtons: {
+    flexDirection: "row",
+  },
+  addButton: {
+    backgroundColor: "#4CAF50",
+    padding: 10,
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  removeButton: {
+    backgroundColor: "#f44336",
+    padding: 10,
+    borderRadius: 5,
   },
   version: {
     fontSize: 14,
