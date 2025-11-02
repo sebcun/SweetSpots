@@ -7,9 +7,14 @@ import { loadSpots } from "@/utils/spots";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
+
+interface Ghost {
+  id: string;
+  position: { latitude: number; longitude: number };
+}
 
 export default function MapScreen() {
   const { lat, lon } = useLocalSearchParams<{ lat?: string; lon?: string }>();
@@ -83,6 +88,53 @@ export default function MapScreen() {
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
 
+  const [ghosts, setGhosts] = useState<Ghost[]>([]);
+  const ghostTimers = useRef<NodeJS.Timeout[]>([]);
+
+  const getRandomNearbyPosition = () => {
+    const latOffset = (Math.random() - 0.5) * region.latitudeDelta * 2;
+    const lonOffset = (Math.random() - 0.5) * region.longitudeDelta * 2;
+    return {
+      latitude: region.latitude + latOffset,
+      longitude: region.longitude + lonOffset,
+    };
+  };
+
+  const spawnGhost = () => {
+    const id = `ghost-${Date.now()}-${Math.random()}`;
+    const startPos = getRandomNearbyPosition();
+    const newGhost: Ghost = { id, position: startPos };
+    setGhosts((prev) => [...prev, newGhost]);
+
+    let count = 0;
+    const interval = setInterval(() => {
+      const newPos = getRandomNearbyPosition();
+      setGhosts((prev) =>
+        prev.map((g) => (g.id === id ? { ...g, position: newPos } : g))
+      );
+      count++;
+      if (count >= 5) {
+        clearInterval(interval);
+        setGhosts((prev) => prev.filter((g) => g.id !== id));
+      }
+    }, 1000);
+  };
+
+  useEffect(() => {
+    const spawnInterval = setInterval(() => {
+      if (Math.random() < 0.3) {
+        spawnGhost();
+      }
+    }, 5000);
+
+    ghostTimers.current.push(spawnInterval);
+
+    return () => {
+      ghostTimers.current.forEach(clearInterval);
+      ghostTimers.current = [];
+    };
+  }, [region]);
+
   const themedStyles = useMemo(() => {
     const colors = Colors[colorScheme ?? "light"];
     return StyleSheet.create({
@@ -147,6 +199,13 @@ export default function MapScreen() {
               setSelectedSpot(spot);
               setRatingModalVisible(true);
             }}
+          />
+        ))}
+        {ghosts.map((ghost) => (
+          <Marker
+            key={ghost.id}
+            coordinate={ghost.position}
+            image={require("../../assets/images/ghost.png")}
           />
         ))}
       </MapView>
