@@ -7,9 +7,10 @@ import {
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
 
+import AnimatedSplashScreen from "@/components/SplashScreen";
 import { useColorScheme } from "@/components/useColorScheme";
 
 export { ErrorBoundary } from "expo-router";
@@ -26,18 +27,24 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
+  const [animationComplete, setAnimationComplete] = useState(false);
+
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && animationComplete) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, animationComplete]);
 
-  if (!loaded) {
-    return null;
+  if (!loaded || !animationComplete) {
+    return (
+      <AnimatedSplashScreen
+        onAnimationComplete={() => setAnimationComplete(true)}
+      />
+    );
   }
 
   return <RootLayoutNav />;
