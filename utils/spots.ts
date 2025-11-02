@@ -1,5 +1,5 @@
 import { supabase } from "@/constants/supabase";
-import { Spot } from "@/constants/types";
+import { Report, Spot } from "@/constants/types";
 
 export const loadSpots = async (): Promise<Spot[]> => {
   try {
@@ -56,6 +56,64 @@ export const addRating = async (
     if (error.message.includes("duplicate key")) {
       console.log("Rating already exists for this IP and spot.");
     }
+    return false;
+  }
+};
+
+export const addReport = async (
+  spotId: number,
+  reason: string,
+  ip: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("reports")
+      .insert([{ spot_id: spotId, reason, ip }]);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error adding report:", error);
+    return false;
+  }
+};
+
+export const loadReports = async (): Promise<Report[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("reports")
+      .select("*, spot:spots(*)")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("error loading reports:", error);
+    return [];
+  }
+};
+
+export const deleteReport = async (reportId: number): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("reports")
+      .delete()
+      .eq("id", reportId);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error deleting report:", error);
+    return false;
+  }
+};
+
+export const deleteSpot = async (spotId: number): Promise<boolean> => {
+  try {
+    await supabase.from("ratings").delete().eq("spot_id", spotId);
+    await supabase.from("reports").delete().eq("spot_id", spotId);
+    const { error } = await supabase.from("spots").delete().eq("id", spotId);
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error("Error deleting spot:", error);
     return false;
   }
 };

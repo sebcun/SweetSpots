@@ -9,6 +9,14 @@ export type Spot = {
   average_ratings?: number;
   num_ratings?: number;
 };
+export type Report = {
+  id: number;
+  spot_id: number;
+  reason: string;
+  ip: string;
+  created_at: string;
+  spot?: Spot;
+};
 
 export const COMMON_CANDIES = [
   "Snickers",

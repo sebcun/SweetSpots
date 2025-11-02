@@ -1,9 +1,10 @@
 import Colors from "@/constants/Colors";
 import { Spot } from "@/constants/types";
-import { addRating, getUserIP } from "@/utils/spots";
+import { addRating, addReport, getUserIP } from "@/utils/spots";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
+  Alert,
   Modal,
   StyleSheet,
   Text,
@@ -45,6 +46,25 @@ export default function RatingModal({
     }
   };
 
+  const handleReport = () => {
+    if (!spot) return;
+    Alert.prompt(
+      "Report Spot",
+      "Why are you reporting this spot?",
+      async (reason) => {
+        if (reason) {
+          const ip = await getUserIP();
+          const success = await addReport(spot.id, reason, ip);
+          if (success) {
+            alert("Report submitted.");
+          } else {
+            alert("Failed to submit report.");
+          }
+        }
+      }
+    );
+  };
+
   if (!spot) return null;
 
   return (
@@ -68,6 +88,9 @@ export default function RatingModal({
               No ratings yet
             </Text>
           )}
+          <TouchableOpacity style={styles.reportButton} onPress={handleReport}>
+            <Text style={styles.reportButtonText}>Report This Spot</Text>
+          </TouchableOpacity>
           <Text style={[styles.rateTitle, { color: colors.text }]}>
             Your Rating:
           </Text>
@@ -140,6 +163,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 10,
     color: "#888",
+  },
+  reportButton: {
+    backgroundColor: "#ff4444",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  reportButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
   rateTitle: {
     fontSize: 16,
