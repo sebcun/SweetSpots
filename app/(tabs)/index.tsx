@@ -1,5 +1,5 @@
 import RatingModal from "@/components/RatingModal";
-import { View } from "@/components/Themed";
+import { Text, View } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { Spot } from "@/constants/types";
@@ -8,7 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { FlatList, Modal, StyleSheet, TouchableOpacity } from "react-native";
 import MapView, { Marker, Region } from "react-native-maps";
 
 interface Ghost {
@@ -135,6 +135,30 @@ export default function MapScreen() {
     };
   }, [region]);
 
+  const [selectedCandies, setSelectedCandies] = useState<string[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const allCandies = useMemo(() => {
+    const candySet = new Set<string>();
+    spots.forEach((spot) =>
+      spot.candies.split(", ").forEach((candy) => candySet.add(candy.trim()))
+    );
+    return Array.from(candySet).sort();
+  }, [spots]);
+
+  const filteredSpots = useMemo(() => {
+    if (selectedCandies.length === 0) return spots;
+    return spots.filter((spot) =>
+      selectedCandies.every((candy) => spot.candies.includes(candy))
+    );
+  }, [spots, selectedCandies]);
+
+  const toggleCandy = (candy: string) => {
+    setSelectedCandies((prev) =>
+      prev.includes(candy) ? prev.filter((c) => c !== candy) : [...prev, candy]
+    );
+  };
+
   const themedStyles = useMemo(() => {
     const colors = Colors[colorScheme ?? "light"];
     return StyleSheet.create({
@@ -181,13 +205,53 @@ export default function MapScreen() {
         color: "white",
         fontSize: 14,
       },
+      modalContainer: {
+        flex: 1,
+        paddingTop: 20,
+        paddingHorizontal: 20,
+        backgroundColor: colors.background,
+      },
+      modalTitle: {
+        fontSize: 24,
+        fontWeight: "bold",
+        textAlign: "center",
+        marginBottom: 20,
+        color: colors.text,
+      },
+      flatListContent: {
+        paddingBottom: 80,
+      },
+      candyItem: {
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: "#ccc",
+      },
+      candyText: {
+        fontSize: 18,
+        color: colors.text,
+      },
+      doneButton: {
+        position: "absolute",
+        bottom: 24,
+        left: 20,
+        right: 20,
+        paddingVertical: 12,
+        backgroundColor: "#eb6223",
+        borderRadius: 8,
+        alignItems: "center",
+      },
+      doneButtonText: {
+        color: "white",
+        fontSize: 18,
+        fontWeight: "600",
+      },
     });
   }, [colorScheme]);
 
   return (
     <View style={styles.container}>
       <MapView style={styles.map} region={region}>
-        {spots.map((spot) => (
+        {filteredSpots.map((spot) => (
           <Marker
             key={spot.id}
             coordinate={{
@@ -210,6 +274,12 @@ export default function MapScreen() {
         ))}
       </MapView>
       <TouchableOpacity
+        style={styles.filterButton}
+        onPress={() => setModalVisible(true)}
+      >
+        <Ionicons name="filter" size={24} color="white" />
+      </TouchableOpacity>
+      <TouchableOpacity
         style={styles.fab}
         onPress={() => router.push("/modal")}
       >
@@ -221,6 +291,38 @@ export default function MapScreen() {
         spot={selectedSpot}
         onRatingSubmitted={loadSpotsData}
       />
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={themedStyles.modalContainer}>
+          <Text style={themedStyles.modalTitle}>Select Candies to Filter</Text>
+          <FlatList
+            data={allCandies}
+            keyExtractor={(item) => item}
+            contentContainerStyle={themedStyles.flatListContent}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={themedStyles.candyItem}
+                onPress={() => toggleCandy(item)}
+              >
+                <Text style={themedStyles.candyText}>
+                  {selectedCandies.includes(item) ? "✓ " : ""}
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+          <TouchableOpacity
+            style={themedStyles.doneButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={themedStyles.doneButtonText}>Done</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -236,6 +338,22 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     bottom: 23,
+    right: 18,
+    backgroundColor: "#eb6223",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  filterButton: {
+    position: "absolute",
+    top: 55,
     right: 18,
     backgroundColor: "#eb6223",
     width: 56,
