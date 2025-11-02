@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
   Alert,
+  Linking,
   Modal,
   StyleSheet,
   Text,
@@ -91,6 +92,18 @@ export default function RatingModal({
           <TouchableOpacity style={styles.reportButton} onPress={handleReport}>
             <Text style={styles.reportButtonText}>Report This Spot</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.mapButton}
+            onPress={() =>
+              Linking.openURL(
+                `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  spot.address
+                )}`
+              )
+            }
+          >
+            <Text style={styles.mapButtonText}>Open in Maps</Text>
+          </TouchableOpacity>
           <Text style={[styles.rateTitle, { color: colors.text }]}>
             Your Rating:
           </Text>
@@ -172,6 +185,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   reportButtonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  mapButton: {
+    backgroundColor: "#007AFF",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  mapButtonText: {
     color: "white",
     fontWeight: "bold",
   },
