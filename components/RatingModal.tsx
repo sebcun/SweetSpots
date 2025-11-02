@@ -1,8 +1,15 @@
 import Colors from "@/constants/Colors";
 import { Spot } from "@/constants/types";
-import { addRating, addReport, getUserIP } from "@/utils/spots";
+import {
+  addRating,
+  addReport,
+  getUserIP,
+  isSpotSaved,
+  saveSpotId,
+  unsaveSpotId,
+} from "@/utils/spots";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Linking,
@@ -32,6 +39,13 @@ export default function RatingModal({
   const [comment, setComment] = useState("");
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (spot) {
+      isSpotSaved(spot.id).then(setIsSaved);
+    }
+  }, [spot]);
 
   const handleSubmit = async () => {
     if (rating === 0 || !spot) return;
@@ -64,6 +78,17 @@ export default function RatingModal({
         }
       }
     );
+  };
+
+  const toggleSave = async () => {
+    if (!spot) return;
+    if (isSaved) {
+      await unsaveSpotId(spot.id);
+      setIsSaved(false);
+    } else {
+      await saveSpotId(spot.id);
+      setIsSaved(true);
+    }
   };
 
   if (!spot) return null;
@@ -103,6 +128,11 @@ export default function RatingModal({
             }
           >
             <Text style={styles.mapButtonText}>Open in Maps</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.saveButton} onPress={toggleSave}>
+            <Text style={styles.saveButtonText}>
+              {isSaved ? "Unsave" : "Save"} This Spot
+            </Text>
           </TouchableOpacity>
           <Text style={[styles.rateTitle, { color: colors.text }]}>
             Your Rating:
@@ -196,6 +226,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   mapButtonText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  saveButton: {
+    backgroundColor: "#4CAF50",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  saveButtonText: {
     color: "white",
     fontWeight: "bold",
   },

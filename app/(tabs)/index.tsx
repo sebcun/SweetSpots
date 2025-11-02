@@ -91,6 +91,8 @@ export default function MapScreen() {
   const [ghosts, setGhosts] = useState<Ghost[]>([]);
   const ghostTimers = useRef<NodeJS.Timeout[]>([]);
 
+  const [booVisible, setBooVisible] = useState(false);
+
   const getRandomNearbyPosition = () => {
     const latOffset = (Math.random() - 0.5) * region.latitudeDelta * 2;
     const lonOffset = (Math.random() - 0.5) * region.longitudeDelta * 2;
@@ -270,6 +272,10 @@ export default function MapScreen() {
             key={ghost.id}
             coordinate={ghost.position}
             image={require("../../assets/images/ghost.png")}
+            onPress={() => {
+              setBooVisible(true);
+              setTimeout(() => setBooVisible(false), 2000);
+            }}
           />
         ))}
       </MapView>
@@ -323,6 +329,11 @@ export default function MapScreen() {
           </TouchableOpacity>
         </View>
       </Modal>
+      <Modal visible={booVisible} transparent={true} animationType="fade">
+        <View style={styles.booContainer}>
+          <Text style={styles.booText}>BOO</Text>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -337,7 +348,7 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: "absolute",
-    bottom: 23,
+    bottom: 93,
     right: 18,
     backgroundColor: "#eb6223",
     width: 56,
@@ -366,5 +377,16 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
+  },
+  booContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  booText: {
+    fontSize: 48,
+    color: "white",
+    fontWeight: "bold",
   },
 });

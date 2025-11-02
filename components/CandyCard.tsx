@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { Text, View } from "../components/Themed";
 
@@ -9,6 +10,7 @@ type CandyCardProps = {
   userLat?: number;
   userLon?: number;
   onPress?: () => void;
+  onUnsave?: () => void;
 };
 
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -40,6 +42,7 @@ export default function CandyCard({
   userLat,
   userLon,
   onPress,
+  onUnsave,
 }: CandyCardProps) {
   const distance =
     userLat && userLon
@@ -69,6 +72,11 @@ export default function CandyCard({
           <Text style={styles.distance} lightColor="#111" darkColor="#fff">
             {distance}
           </Text>
+          {onUnsave && (
+            <TouchableOpacity onPress={onUnsave} style={styles.unsaveButton}>
+              <Ionicons name="close" size={24} color="#888" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -116,5 +124,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     opacity: 0.9,
+  },
+  unsaveButton: {
+    marginLeft: 10,
   },
 });

@@ -15,6 +15,10 @@ export default function TabLayout() {
         <Label>Near Me</Label>
         <Icon sf="location.circle.fill" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="saved">
+        <Label>Saved</Label>
+        <Icon sf="bookmark.fill" drawable="custom_android_drawable" />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="about">
         <Label>About</Label>
         <Icon sf="info.circle.fill" drawable="custom_android_drawable" />
