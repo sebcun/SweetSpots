@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 
+import { useTheme } from "@/components/ThemeContext";
 import { Text, View } from "@/components/Themed";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
@@ -19,6 +20,7 @@ import { useRouter } from "expo-router";
 export default function SettingsScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
+  const { theme, setTheme } = useTheme();
   const router = useRouter();
   const [adminModalVisible, setAdminModalVisible] = useState(false);
   const [reports, setReports] = useState<Report[]>([]);
@@ -147,6 +149,38 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      <View style={styles.themeSection}>
+        <Text style={[styles.themeTitle, { color: colors.text }]}>Theme</Text>
+        <View style={styles.themeButtons}>
+          <TouchableOpacity
+            style={[
+              styles.themeButton,
+              theme === "light" && styles.selectedThemeButton,
+            ]}
+            onPress={() => setTheme("light")}
+          >
+            <Text style={styles.buttonText}>Light</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.themeButton,
+              theme === "dark" && styles.selectedThemeButton,
+            ]}
+            onPress={() => setTheme("dark")}
+          >
+            <Text style={styles.buttonText}>Dark</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.themeButton,
+              theme === "system" && styles.selectedThemeButton,
+            ]}
+            onPress={() => setTheme("system")}
+          >
+            <Text style={styles.buttonText}>System</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
       <View>
         <Text style={styles.version}>
           Version {Constants.expoConfig?.version || "1.0.0"}
@@ -228,6 +262,27 @@ const styles = StyleSheet.create({
     backgroundColor: "#f44336",
     padding: 10,
     borderRadius: 5,
+  },
+  themeSection: {
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  themeTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  themeButtons: {
+    flexDirection: "row",
+    marginTop: 10,
+  },
+  themeButton: {
+    backgroundColor: "#ccc",
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  selectedThemeButton: {
+    backgroundColor: "#4CAF50",
   },
   version: {
     fontSize: 14,
